@@ -18,8 +18,13 @@ Currently Desert has the following limitations:
 * Defold userdata of type hash or url is not supported
 * Keys must be of type string
 
-## Installation
 
+## Installation
+You can use the Desert in your own project by adding this project as a [Defold library dependency](http://www.defold.com/manuals/libraries/). Open your game.project file and in the dependencies field under project add:
+
+https://github.com/britzl/desert/archive/master.zip
+
+Or point to the ZIP file of a [specific release](https://github.com/britzl/desert/releases).
 
 
 ## Usage
