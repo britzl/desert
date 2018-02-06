@@ -24,11 +24,10 @@ gravity_y = 0
 shared_state = 1
 
 [library]
-include_dirs = ludobits
+include_dirs = desert
 
 [graphics]
 max_debug_vertices = 50000
 
 [collection_proxy]
 max_count = 16
-
