@@ -1,0 +1,6 @@
+go.property("player_id", 5)
+go.property("speed", vmath.vector3(100, 200, 0))
+
+function init(self)
+	label.set_text("#label", ("id: %d\nspeed: %s"):format(self.player_id, tostring(self.speed)))
+end

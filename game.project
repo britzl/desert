@@ -1,0 +1,34 @@
+[project]
+title = Desert
+version = 1.0
+dependencies = https://github.com/britzl/deftest/archive/master.zip,https://github.com/britzl/defold-input/archive/0.9.zip,https://github.com/britzl/ludobits/archive/4.0.1.zip
+
+[bootstrap]
+main_collection = /test/test.collectionc
+render = /builtins/render/default.renderc
+
+[input]
+game_binding = /in/bindings/all.input_bindingc
+gamepads = /in/gamepads/in.gamepadsc
+
+[display]
+width = 1280
+height = 720
+
+[physics]
+scale = 0.02
+debug = 0
+gravity_y = 0
+
+[script]
+shared_state = 1
+
+[library]
+include_dirs = ludobits
+
+[graphics]
+max_debug_vertices = 50000
+
+[collection_proxy]
+max_count = 16
+
