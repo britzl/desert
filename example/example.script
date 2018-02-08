@@ -6,7 +6,7 @@ local NODE = desert.object({
 	position = desert.vector3(),
 })
 
-local GAMEDATA = desert.zip(desert.json(desert.object({
+local GAMEDATA = desert.base64(desert.zip(desert.json(desert.object({
 	id = desert.number(),
 	fn = desert.func(math.random),
 	positions = desert.tableof(desert.vector3()),
@@ -17,7 +17,7 @@ local GAMEDATA = desert.zip(desert.json(desert.object({
 			speed = desert.vector3(),
 		}
 	})
-})))
+}))))
 
 local function random_v3()
 	return vmath.vector3(math.random(10, 300), math.random(10, 300), math.random(-1, 1))
@@ -52,7 +52,7 @@ end
 function on_message(self, message_id, message, sender)
 	if message_id == hash("save") then
 		local gamedata = GAMEDATA.encode(self.gamedata)
-		print("Saving gamedata with length", #gamedata)
+		print("Saving gamedata with length", #gamedata, gamedata)
 		savefile.open("desert_gamedata").save(gamedata)
 	elseif message_id == hash("load") then
 		go.delete(self.gamedata.player)

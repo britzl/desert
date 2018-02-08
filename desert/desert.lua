@@ -1,4 +1,5 @@
 local json = require "desert.json"
+local base64 = require "desert.base64"
 
 local M = {}
 
@@ -430,7 +431,7 @@ function M.object(model)
 				result[k] = v.create()
 			end
 			return result
-		end
+		end,
 	}
 end
 
@@ -443,6 +444,23 @@ function M.json(model)
 		end,
 		decode = function(v)
 			return model.decode(json.decode(v))
+		end,
+		create = function()
+			return model.create()
+		end
+	}
+end
+
+
+
+function M.base64(model)
+	assert(model and is_model(model), "Expected an object model to base64 encode/decode")
+	return {
+		encode = function(v)
+			return base64.encode(model.encode(v))
+		end,
+		decode = function(v)
+			return model.decode(base64.decode(v))
 		end,
 		create = function()
 			return model.create()
