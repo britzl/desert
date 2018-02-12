@@ -61,6 +61,9 @@ end
 local function is_userdata(v)
 	return type(v) == "userdata"
 end
+local function is_function(v)
+	return type(v) == "function"
+end
 local function is_model(v)
 	return type(v) == "table" and v.encode and v.decode and v.create
 end
@@ -484,6 +487,21 @@ function M.zip(model)
 		create = function()
 			return model.create()
 		end
+	}
+end
+
+
+function M.after(model, fn)
+	assert(model and is_model(model), "Expected an object model")
+	assert(fn and is_function(fn), "Expected a function")
+	return {
+		encode = model.encode,
+		decode = function(v)
+			local o = model.decode(v)
+			o = fn(o)
+			return o
+		end,
+		create = model.create
 	}
 end
 

@@ -207,5 +207,20 @@ return function()
 			assert(decoded.rng == math.random)
 			assert(decoded.time == os.time)
 		end)
+
+		it("should be able to run a function once an object is decoded", function()
+			local model = desert.tableof(desert.vector3())
+			local input = { vmath.vector3(10), vmath.vector3(20), vmath.vector3(30) }
+			local encoded = model.encode(input)
+
+			local decoded = desert.after(model, function(t)
+				for i,v3 in ipairs(t) do t[i] = v3 * 10 end
+				return t
+			end).decode(encoded)
+			
+			assert(decoded[1] == vmath.vector3(10) * 10)
+			assert(decoded[2] == vmath.vector3(20) * 10)
+			assert(decoded[3] == vmath.vector3(30) * 10)
+		end)
 	end)
 end

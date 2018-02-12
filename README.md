@@ -10,7 +10,9 @@
     * Matrix4
 	* Quaternion
   * Game objects including script properties
-* Encode and decode to JSON (with optional zlib compression)
+* Encode and decode to JSON
+* Inflate and deflate using zlib
+* Encode and decode to base64
 
 ## Limitations
 Currently Desert has the following limitations:
@@ -53,33 +55,58 @@ Desert is based around the concept of data models. You start by creating a data 
 ## API
 
 ### desert.number(default)
+Lua number
 
 ### desert.integer(default)
+Integer, rounded down
 
 ### desert.boolean(default)
+Lua boolean
 
 ### desert.string(default)
+Lua string
 
 ### desert.vector3(default)
+Defold vector3
 
 ### desert.vector4(default)
+Defold vector4
 
 ### desert.vector(default)
+Defold vector of arbitrary length
 
 ### desert.quat(default)
+Defold quaternion
 
 ### desert.matrix4(default)
+Defold matrix4
 
 ### desert.func(fn)
+Lua function
 
 ### desert.ignore()
+The value will be replaced by nil
 
 ### desert.object(table)
+Lua table. The key-value pairs are expected to be desert types.
+
+### desert.table(table)
+Lua table. The values of the table will not be processed.
 
 ### desert.tableof(model)
+Lua table with values of a single desert type.
 
 ### desert.gameobject(factory_url, properties_model)
+Defold game object id
 
 ### desert.json(model)
+Encode/decode to json. Expects that the value produced by the model can be json encoded.
 
 ### desert.zip(model)
+Inflate/deflate using zlib. Expects that the value produced by the model is a string.
+
+### desert.base64(model)
+Encode/decode to base64. Expected that the value produced by the model is a string.
+
+### desert.after(model, fn)
+Apply a function to the value produced when the model is decoded.
