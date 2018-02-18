@@ -428,10 +428,14 @@ function M.object(model)
 			end
 			return result
 		end,
-		create = function()
+		create = function(data)
 			local result = {}
 			for k,v in pairs(model) do
-				result[k] = v.create()
+				if data and data[k] ~= nil then
+					result[k] = data[k]
+				else
+					result[k] = v.create()
+				end
 			end
 			return result
 		end,
