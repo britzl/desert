@@ -57,7 +57,7 @@ Desert is based around the concept of data models. You start by creating a data 
 A more advanced use case:
 
     -- this is the model representing an enemy
-    -- the enemies are created from a factory and they have a starting the health of 100
+    -- the enemies are created from a factory and they have a starting health of 100
     local enemy_model = desert.object({
         id = desert.gameobject("factories#enemy"),
         health = desert.number(100),
