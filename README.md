@@ -101,12 +101,28 @@ A more advanced use case:
     -- rotation and scale
     game = game_model.decode(encoded_game_state)
 
-## API
-The API consists of a number of functions describing different data types, typically pure Lua data types such as numbers, booleans or strings, but also complex data types such as table structures or Defold user data. Each type has a corresponding API function. When the API function is invoked it will return an object (table) containing functions that can be used encode, decode and create values of the specific type. In many cases the values aren't transformed at all which usually is the case with primitive data types, but for complex data types and user data the encoding will result in a transformation of the value into a serializable form. Examples:
+
+## API - overview
+The API consists of a number of functions describing different data types, typically pure Lua data types such as numbers, booleans or strings, but also complex data types such as table structures or Defold user data. Each type has a corresponding API function. When the API function is invoked it will return an object (table) containing functions that can be used encode, decode and create values of the specific type:
+
+### encode(v)
+Encode the specified value according to it's data type. In many cases the values aren't transformed at all which usually is the case with primitive data types, but for complex data types and user data the encoding will result in a transformation of the value into a serializable form. Examples:
 
     pprint(desert.number().encode(123))  -- 123
     pprint(desert.integer().encode(123.45))  -- 123
     pprint(desert.vector3().encode(vmath.vector3(10.5, 200, 0.5)))  -- { x = 10.5, y = 200, z = 0.5 }
+
+### decode(v)
+Decode a previously encoded value back to it's original type
+
+### create([v])
+Create an instance of the data type with either the optional value or a default value. If the type is a complex type this will result in a deep-copy.
+
+### copy(v)
+Create a copy of the provided value. This will in the case of complex values be a deep-copy of the value.
+
+
+## API - Data types
 
 ### desert.number(default)
 Lua number

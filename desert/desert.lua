@@ -1,5 +1,6 @@
 local json = require "desert.json"
 local base64 = require "desert.base64"
+local msgpack = require "desert.MessagePack"
 
 local M = {}
 
@@ -8,6 +9,21 @@ local V3_ONE = vmath.vector3(1)
 local V4_ZERO = vmath.vector4(0)
 local V4_ONE = vmath.vector4(1)
 local QUAT_ZERO = vmath.quat()
+
+local function deepcopy(orig)
+	local orig_type = type(orig)
+	local copy
+	if orig_type == 'table' then
+		copy = {}
+		for orig_key, orig_value in next, orig, nil do
+			copy[deepcopy(orig_key)] = deepcopy(orig_value)
+		end
+		setmetatable(copy, deepcopy(getmetatable(orig)))
+	else -- number, string, boolean, etc
+		copy = orig
+	end
+	return copy
+end
 
 local function m4_to_t(m4)
 	return {
@@ -69,7 +85,6 @@ local function is_model(v)
 end
 
 
-
 function M.primitive(default)
 	return {
 		encode = function(v)
@@ -80,9 +95,12 @@ function M.primitive(default)
 			assert(is_nil(v) or is_table(v) or is_number(v) or is_string(v) or is_boolean(v))
 			return v
 		end,
-		create = function()
-			return default
-		end
+		create = function(v)
+			return v or default
+		end,
+		copy = function(v)
+			return v
+		end,
 	}
 end
 
@@ -98,8 +116,13 @@ function M.number(default)
 			assert(is_number(v))
 			return v
 		end,
-		create = function()
-			return default or 0
+		create = function(v)
+			assert(not v or is_number(v))
+			return v or default or 0
+		end,
+		copy = function(v)
+			assert(not v or is_number(v))
+			return v
 		end,
 	}
 end
@@ -116,9 +139,14 @@ function M.integer(default)
 			assert(is_number(v))
 			return v
 		end,
-		create = function()
-			return default or 0
-		end
+		create = function(v)
+			assert(not v or is_number(v))
+			return (v and math.floor(v)) or (default and math.floor(default)) or 0
+		end,
+		copy = function(v)
+			assert(not v or is_number(v))
+			return (v and math.floor(v))
+		end,
 	}
 end
 
@@ -134,9 +162,14 @@ function M.string(default)
 			assert(is_string(v))
 			return v
 		end,
-		create = function()
-			return default or ""
-		end
+		create = function(v)
+			assert(not v or is_string(v))
+			return v or default or ""
+		end,
+		copy = function(v)
+			assert(not v or is_string(v))
+			return v
+		end,
 	}
 end
 
@@ -153,9 +186,18 @@ function M.boolean(default)
 			assert(is_number(v))
 			return v == 1
 		end,
-		create = function()
-			return default
-		end
+		create = function(v)
+			assert(v == nil or is_boolean(v))
+			if v ~= nil then
+				return v
+			else
+				return default
+			end
+		end,
+		copy = function(v)
+			assert(v == nil or is_boolean(v))
+			return v
+		end,
 	}
 end
 
@@ -170,9 +212,16 @@ function M.table(default)
 			assert(is_table(v))
 			return v
 		end,
-		create = function()
-			return default or {}
-		end
+		create = function(v)
+			assert(not v or is_table(v))
+			if v then return deepcopy(v) end
+			if default then return deepcopy(default) end
+			return {}
+		end,
+		copy = function(v)
+			assert(not v or is_table(v))
+			return deepcopy(v)
+		end,
 	}
 end
 
@@ -181,7 +230,8 @@ function M.ignore()
 	return {
 		encode = function(v) return nil end,
 		decode = function(v) return nil end,
-		create = function() return nil end,
+		create = function(v) return nil end,
+		copy = function(v) return nil end,
 	}
 end
 
@@ -193,8 +243,7 @@ function M.vector3(default)
 			if not v3 then
 				return nil
 			else
-				assert(type(v3) == "userdata", "Expected userdata")
-				assert(v3.x and v3.y and v3.z, "Expected a vector 3")
+				assert(is_userdata(v3), "Expected a vector3")
 				return v3_to_t(v3)
 			end
 		end,
@@ -207,8 +256,13 @@ function M.vector3(default)
 				return t_to_v3(t)
 			end
 		end,
-		create = function()
-			return default or vmath.vector3()
+		create = function(v)
+			assert(not v or is_userdata(v), "Expected a vector3")
+			return (v and vmath.vector3(v)) or (default and vmath.vector3(default)) or vmath.vector3()
+		end,
+		copy = function(v)
+			assert(not v or is_userdata(v), "Expected a vector3")
+			return v and vmath.vector3(v)
 		end,
 	}
 end
@@ -235,9 +289,14 @@ function M.vector4(default)
 				return t_to_v4(t)
 			end
 		end,
-		create = function()
-			return default or vmath.vector4()
-		end
+		create = function(v)
+			assert(not v or is_userdata(v), "Expected a vector4")
+			return (v and vmath.vector4(v)) or (default and vmath.vector4(default)) or vmath.vector4()
+		end,
+		copy = function(v)
+			assert(not v or is_userdata(v), "Expected a vector4")
+			return v and vmath.vector4(v)
+		end,
 	}
 end
 
@@ -261,8 +320,13 @@ function M.vector(default)
 				return t_to_v(t)
 			end
 		end,
-		create = function()
-			return default or vmath.vector({})
+		create = function(v)
+			assert(not v or is_userdata(v), "Expected a vector")
+			return (v and vmath.vector(v_to_t(v))) or (default and vmath.vector(v_to_t(default))) or vmath.vector({})
+		end,
+		copy = function(v)
+			assert(not v or is_userdata(v), "Expected a vector")
+			return v and vmath.vector(v_to_t(v))
 		end,
 	}
 end
@@ -289,9 +353,14 @@ function M.quat(default)
 				return t_to_quat(t)
 			end
 		end,
-		create = function()
-			return default or vmath.quat()
-		end
+		create = function(v)
+			assert(not v or is_userdata(v), "Expected a quaternion")
+			return (v and vmath.quat(v)) or (default and vmath.quat(default)) or vmath.quat()
+		end,
+		copy = function(v)
+			assert(not v or is_userdata(v), "Expected a quaternion")
+			return v and vmath.quat(v)
+		end,
 	}
 end
 
@@ -315,19 +384,28 @@ function M.matrix4(default)
 				return t_to_m4(t)
 			end
 		end,
-		create = function()
-			return default or vmath.matrix4()
-		end
+		create = function(v)
+			assert(not v or is_userdata(v), "Expected a matrix")
+			return (v and vmath.matrix4(v)) or (default and vmath.matrix4(default)) or vmath.matrix4()
+		end,
+		copy = function(v)
+			assert(not v or is_userdata(v), "Expected a matrix")
+			return v and vmath.matrix4(v)
+		end,
 	}
 end
 
 
 function M.func(fn)
-	assert(fn and type(fn) == "function", "You must provide a function")
+	assert(fn and is_function(fn), "You must provide a function")
 	return {
 		encode = function(v) return "" end,
 		decode = function(v) return fn end,
-		create = function() return fn end,
+		create = function(v)
+			assert(not v or is_function(v), "Expected a function")
+			return v or fn
+		end,
+		copy = function(v) return v end
 	}
 end
 
@@ -335,7 +413,8 @@ end
 function M.gameobject(factory_url, properties)
 	assert(factory_url, "You must provide a factory url")
 	assert(properties, "You must provide a list of properties")
-	return {
+	local instance = nil
+	instance = {
 		encode = function(id)
 			assert(id and type(id) == "userdata", "Expected userdata")
 			local pos = go.get_position(id)
@@ -370,10 +449,20 @@ function M.gameobject(factory_url, properties)
 			end
 			return factory.create(factory_url, pos, rot, props, scale)
 		end,
-		create = function()
-			return factory.create(factory_url)
+		create = function(data)
+			return factory.create(
+			factory_url,
+			data and data.position or V3_ZERO,
+			data and data.rotation or QUAT_ZERO,
+			data and data.properties or {},
+			data and data.scale or V3_ONE)
+		end,
+		copy = function(id)
+			assert(id and type(id) == "userdata", "Expected userdata")
+			return instance.decode(instance.encode(id))
 		end
 	}
+	return instance
 end
 
 
@@ -394,8 +483,16 @@ function M.tableof(model)
 			end
 			return res
 		end,
-		create = function()
-			return {}
+		create = function(t)
+			assert(not t or is_table(t))
+			return t or {}
+		end,
+		copy = function(t)
+			local res = {}
+			for k,v in pairs(t) do
+				res[k] = model.copy(v)
+			end
+			return res
 		end
 	}
 end
@@ -429,16 +526,25 @@ function M.object(model)
 			return result
 		end,
 		create = function(data)
+			assert(not data or is_table(data))
 			local result = {}
 			for k,v in pairs(model) do
-				if data and data[k] ~= nil then
-					result[k] = data[k]
-				else
-					result[k] = v.create()
-				end
+				result[k] = v.create(data and data[k])
 			end
 			return result
 		end,
+		copy = function(data)
+			assert(data and type(data) == "table", "You must provide data to copy")
+			local result = {}
+			for k,v in pairs(data) do
+				if model[k] then
+					result[k] = model[k].copy(v)
+				else
+					result[k] = v
+				end
+			end
+			return result
+		end
 	}
 end
 
@@ -451,6 +557,25 @@ function M.json(model)
 		end,
 		decode = function(v)
 			return model.decode(json.decode(v))
+		end,
+		create = function()
+			return model.create()
+		end,
+		copy = function(v)
+			return model.copy(v)
+		end
+	}
+end
+
+
+function M.msgpack(model)
+	assert(model and is_model(model), "Expected an object model to MessagePack")
+	return {
+		encode = function(v)
+			return msgpack.pack(model.encode(v))
+		end,
+		decode = function(v)
+			return model.decode(msgpack.unpack(v))
 		end,
 		create = function()
 			return model.create()
