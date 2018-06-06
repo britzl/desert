@@ -1,30 +1,38 @@
 local desert = require "desert.desert"
 local savefile = require "ludobits.m.io.savefile"
 
+
 local NODE = desert.object({
 	score = desert.number(),
 	position = desert.vector3(),
 })
 
-local GAMEDATA = desert.base64(desert.zip(desert.json(desert.object({
-	id = desert.number(),
-	fn = desert.func(math.random),
-	positions = desert.tableof(desert.vector3()),
-	nodes = desert.tableof(NODE),
-	player = desert.gameobject("#factory", {
+local PLAYER = desert.object({
+	id = desert.gameobject("#factory", {
 		script = {
 			player_id = desert.number(),
 			speed = desert.vector3(),
 		}
 	})
-}))))
+})
+
+local GAMEDATA = desert.object({
+	id = desert.number(),
+	fn = desert.func(math.random),
+	positions = desert.tableof(desert.vector3()),
+	nodes = desert.tableof(NODE),
+	player = PLAYER,
+})
+
+--local GAMEDATA_SAVEFORMAT = desert.base64(desert.zip(desert.json(GAMEDATA)))
+local GAMEDATA_SAVEFORMAT = desert.base64(desert.zip(desert.msgpack(GAMEDATA)))
 
 local function random_v3()
 	return vmath.vector3(math.random(10, 300), math.random(10, 300), math.random(-1, 1))
 end
 
 local function random_gamedata()
-	return {
+	return GAMEDATA.create({
 		id = math.random(9999, 999999),
 		fn = math.random,
 		positions = {
@@ -32,15 +40,20 @@ local function random_gamedata()
 			random_v3(),
 		},
 		nodes = {
-			{ score = 100, position = random_v3() },
-			{ score = 210, position = random_v3() },
-			{ score = 50, position = random_v3() },
+			NODE.create({ score = 100, position = random_v3() }),
+			NODE.create({ score = 210, position = random_v3() }),
+			NODE.create({ score = 50, position = random_v3() }),
 		},
-		player = factory.create("#factory", random_v3(), nil, {
-			player_id = math.random(1, 1000),
-			speed = random_v3()
-		})
-	}
+		player = {
+			id = {
+				position = random_v3(),
+				properties = {
+					player_id = 1,
+					speed = random_v3(),
+				}
+			},
+		},
+	})
 end
 
 function init(self)
@@ -51,12 +64,12 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("save") then
-		local gamedata = GAMEDATA.encode(self.gamedata)
+		local gamedata = GAMEDATA_SAVEFORMAT.encode(self.gamedata)
 		print("Saving gamedata with length", #gamedata, gamedata)
 		savefile.open("desert_gamedata").save(gamedata)
 	elseif message_id == hash("load") then
 		go.delete(self.gamedata.player)
-		self.gamedata = GAMEDATA.decode(savefile.open("desert_gamedata").load())
+		self.gamedata = GAMEDATA_SAVEFORMAT.decode(savefile.open("desert_gamedata").load())
 	elseif message_id == hash("random") then
 		go.delete(self.gamedata.player)
 		self.gamedata = random_gamedata()
