@@ -59,6 +59,12 @@ local function t_to_v4(t) return vmath.vector4(t.x, t.y, t.z, t.w) end
 local function quat_to_t(q) return { x = q.x, y = q.y, z = q.z, w = q.w } end
 local function t_to_quat(t) return vmath.quat(t.x, t.y, t.z, t.w) end
 
+local vector_mt = getmetatable(vmath.vector({}))
+local vector3_mt = getmetatable(vmath.vector3())
+local vector4_mt = getmetatable(vmath.vector4())
+local matrix4_mt = getmetatable(vmath.matrix4())
+local quat_mt = getmetatable(vmath.quat())
+
 local function is_nil(v)
 	return type(v) == "nil"
 end
@@ -76,6 +82,21 @@ local function is_table(v)
 end
 local function is_userdata(v)
 	return type(v) == "userdata"
+end
+local function is_vector(v)
+	return type(v) == "userdata" and getmetatable(v) == vector_mt
+end
+local function is_vector3(v)
+	return type(v) == "userdata" and getmetatable(v) == vector3_mt
+end
+local function is_vector4(v)
+	return type(v) == "userdata" and getmetatable(v) == vector4_mt
+end
+local function is_matrix4(v)
+	return type(v) == "userdata" and getmetatable(v) == matrix4_mt
+end
+local function is_quat(v)
+	return type(v) == "userdata" and getmetatable(v) == quat_mt
 end
 local function is_function(v)
 	return type(v) == "function"
@@ -237,13 +258,13 @@ end
 
 
 function M.vector3(default)
-	assert(not default or is_userdata(default), "Expected no default value or userdata")
+	assert(not default or is_vector3(default), "Expected no default value or userdata")
 	return {
 		encode = function(v3)
 			if not v3 then
 				return nil
 			else
-				assert(is_userdata(v3), "Expected a vector3")
+				assert(is_vector3(v3), "Expected a vector3")
 				return v3_to_t(v3)
 			end
 		end,
@@ -257,11 +278,11 @@ function M.vector3(default)
 			end
 		end,
 		create = function(v)
-			assert(not v or is_userdata(v), "Expected a vector3")
+			assert(not v or is_vector3(v), "Expected a vector3")
 			return (v and vmath.vector3(v)) or (default and vmath.vector3(default)) or vmath.vector3()
 		end,
 		copy = function(v)
-			assert(not v or is_userdata(v), "Expected a vector3")
+			assert(not v or is_vector3(v), "Expected a vector3")
 			return v and vmath.vector3(v)
 		end,
 	}
@@ -269,7 +290,7 @@ end
 
 
 function M.vector4(default)
-	assert(not default or is_userdata(default), "Expected no default value or userdata")
+	assert(not default or is_vector4(default), "Expected no default value or userdata")
 	return {
 		encode = function(v4)
 			if not v4 then
@@ -290,11 +311,11 @@ function M.vector4(default)
 			end
 		end,
 		create = function(v)
-			assert(not v or is_userdata(v), "Expected a vector4")
+			assert(not v or is_vector4(v), "Expected a vector4")
 			return (v and vmath.vector4(v)) or (default and vmath.vector4(default)) or vmath.vector4()
 		end,
 		copy = function(v)
-			assert(not v or is_userdata(v), "Expected a vector4")
+			assert(not v or is_vector4(v), "Expected a vector4")
 			return v and vmath.vector4(v)
 		end,
 	}
@@ -302,7 +323,7 @@ end
 
 
 function M.vector(default)
-	assert(not default or is_userdata(default), "Expected no default value or userdata")
+	assert(not default or is_vector(default), "Expected no default value or userdata")
 	return {
 		encode = function(v)
 			if not v then
@@ -321,11 +342,11 @@ function M.vector(default)
 			end
 		end,
 		create = function(v)
-			assert(not v or is_userdata(v), "Expected a vector")
+			assert(not v or is_vector(v), "Expected a vector")
 			return (v and vmath.vector(v_to_t(v))) or (default and vmath.vector(v_to_t(default))) or vmath.vector({})
 		end,
 		copy = function(v)
-			assert(not v or is_userdata(v), "Expected a vector")
+			assert(not v or is_vector(v), "Expected a vector")
 			return v and vmath.vector(v_to_t(v))
 		end,
 	}
@@ -333,7 +354,7 @@ end
 
 
 function M.quat(default)
-	assert(not default or is_userdata(default), "Expected no default value or userdata")
+	assert(not default or is_quat(default), "Expected no default value or userdata")
 	return {
 		encode = function(q)
 			if not q then
@@ -354,11 +375,11 @@ function M.quat(default)
 			end
 		end,
 		create = function(v)
-			assert(not v or is_userdata(v), "Expected a quaternion")
+			assert(not v or is_quat(v), "Expected a quaternion")
 			return (v and vmath.quat(v)) or (default and vmath.quat(default)) or vmath.quat()
 		end,
 		copy = function(v)
-			assert(not v or is_userdata(v), "Expected a quaternion")
+			assert(not v or is_quat(v), "Expected a quaternion")
 			return v and vmath.quat(v)
 		end,
 	}
@@ -366,7 +387,7 @@ end
 
 
 function M.matrix4(default)
-	assert(not default or is_userdata(default), "Expected no default value or userdata")
+	assert(not default or is_matrix4(default), "Expected no default value or userdata")
 	return {
 		encode = function(m4)
 			if not m4 then
@@ -385,11 +406,11 @@ function M.matrix4(default)
 			end
 		end,
 		create = function(v)
-			assert(not v or is_userdata(v), "Expected a matrix")
+			assert(not v or is_matrix4(v), "Expected a matrix")
 			return (v and vmath.matrix4(v)) or (default and vmath.matrix4(default)) or vmath.matrix4()
 		end,
 		copy = function(v)
-			assert(not v or is_userdata(v), "Expected a matrix")
+			assert(not v or is_matrix4(v), "Expected a matrix")
 			return v and vmath.matrix4(v)
 		end,
 	}
