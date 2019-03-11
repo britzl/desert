@@ -37,7 +37,7 @@ Desert is based around the concept of data models. You start by creating a data 
 	local user_model = desert.json(desert.object({
 		id = desert.number(),
 		name = desert.string(),
-		position = vmath.vector3(),
+		position = desert.vector3(),
 	}))
 
 	local user1 = { id = 1234, name = "Mr Brown", position = vmath.vector3(10, 20, 30) }
