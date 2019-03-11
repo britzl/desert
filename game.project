@@ -1,7 +1,7 @@
 [project]
 title = Desert
 version = 1.0
-dependencies = https://github.com/britzl/deftest/archive/master.zip,https://github.com/britzl/defold-input/archive/0.9.zip,https://github.com/britzl/ludobits/archive/4.0.1.zip
+dependencies = https://github.com/britzl/deftest/archive/2.7.0.zip,https://github.com/britzl/defold-input/archive/0.9.zip,https://github.com/britzl/ludobits/archive/4.0.1.zip
 
 [bootstrap]
 main_collection = /test/test.collectionc
@@ -31,3 +31,4 @@ max_debug_vertices = 50000
 
 [collection_proxy]
 max_count = 16
+
